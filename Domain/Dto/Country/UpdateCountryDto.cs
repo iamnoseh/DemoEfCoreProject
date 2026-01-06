@@ -1,3 +1,3 @@
-﻿namespace Domain.Dto;
+﻿namespace Domain.Dto.Country;
 
 public class UpdateCountryDto : CreateCountryDto { }

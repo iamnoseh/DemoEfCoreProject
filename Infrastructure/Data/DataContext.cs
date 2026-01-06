@@ -6,4 +6,5 @@ namespace Infrastructure.Data;
 public class DataContext(DbContextOptions<DataContext> options) : DbContext(options)
 {
     public DbSet<Country> Countries { get; set; }
+    public DbSet<City> Cities { get; set; }
 }
