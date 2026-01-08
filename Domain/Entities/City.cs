@@ -1,10 +1,12 @@
 ﻿namespace Domain.Entities;
 
-public class City
+public class City :  BaseEntity
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; } 
-    public int? Population { get; set; }
-    public DateTime Created { get; set; } =  DateTime.UtcNow;
+    public string Name { get; set; } = String.Empty;
+    public int Population { get; set; } 
+    public string? MayorName { get; set; }
+    
+    //navigation
+    public int? CountryId { get; set; }
+    public Country? Country { get; set; }
 }

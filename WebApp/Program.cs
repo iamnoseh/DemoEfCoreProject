@@ -9,11 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<DataContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnectionString")));
-builder.Services.AddScoped<DataContext>();
-builder.Services.AddScoped<ICountryService, CountryService>();
-builder.Services.AddScoped<ICityService, CityService>();
+builder.Services.AddDbContext<ApplicationDataContext>(option=> 
+    option.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnectionString")));
+builder.Services.AddScoped<ApplicationDataContext>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 var app = builder.Build();
 
 
