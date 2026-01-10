@@ -13,6 +13,7 @@ builder.Services.AddDbContext<ApplicationDataContext>(option=>
     option.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnectionString")));
 builder.Services.AddScoped<ApplicationDataContext>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
 
 var app = builder.Build();
 
