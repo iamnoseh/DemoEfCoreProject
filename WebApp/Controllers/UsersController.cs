@@ -15,7 +15,7 @@ public class UsersController(IUserService service) : Controller
         return StatusCode(res.StatusCode, res);
     }
 
-    [HttpPut]
+    [HttpPatch]
     public IActionResult UpdateUser(int id,UpdateUserDto dto)
     {
         var res = service.UpdateUser(id,dto);

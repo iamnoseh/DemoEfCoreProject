@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AutoMapper;
 using Domain.Dto.City;
 using Domain.Dto.Country;
 using Domain.Entities;
@@ -9,21 +10,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Service;
 
-public class CountryService(ApplicationDataContext context) : ICountryService
+public class CountryService(ApplicationDataContext context,
+    IMapper mapper) : ICountryService
 {
     public Response<string> CreateCountry(CreateCountryDto dto)
     {
-        var newCountry = new Country()
-        {
-            Name = dto.Name,
-            Capital = dto.Capital,
-            State = dto.State,
-        };
-        context.Countries.Add(newCountry);
+        var country = mapper.Map<Country>(dto);
+        context.Countries.Add(country);
         var res = context.SaveChanges();
-        return res > 0 
-            ? new  Response<string>(HttpStatusCode.Created,$"Country created successfully") 
-            : new  Response<string>(HttpStatusCode.BadRequest,$"Error creating country");
+        return res > 0
+            ? new Response<string>(HttpStatusCode.Created, "Country created successfully")
+            : new Response<string>(HttpStatusCode.BadRequest, "Error creating country");
     }
 
     public Response<string> UpdateCountry(int id, UpdateCountryDto dto)
@@ -45,16 +42,7 @@ public class CountryService(ApplicationDataContext context) : ICountryService
     {
         var res =  context.Countries
             .Include(x=>x.President).ToList();
-        var dto = res.Select(x => new GetCountryDto()
-        {
-            Id = x.Id,
-            Name = x.Name,
-            Capital = x.Capital,
-            State = x.State,
-            UserId = x.UserId ?? 0,
-            Created = x.CreatedAt,
-            PresidentName = x.President!.Name
-        }).ToList();
+        var dto = mapper.Map<List<GetCountryDto>>(res);
         return new Response<List<GetCountryDto>>(dto);
     }
 
@@ -62,16 +50,7 @@ public class CountryService(ApplicationDataContext context) : ICountryService
     {
         var res = context.Countries.
             Include(x=> x.President).FirstOrDefault(x=>x.Id==id);
-        var dto = new GetCountryDto()
-        {
-            Id = res!.Id,
-            Name = res.Name,
-            Capital = res.Capital,
-            State = res.State,
-            UserId = res.UserId ?? 0,
-            Created = res.CreatedAt,
-            PresidentName = res.President!.Name
-        };
+        var dto = mapper.Map<GetCountryDto?>(res);
         return new Response<GetCountryDto?>(dto);
     }
 

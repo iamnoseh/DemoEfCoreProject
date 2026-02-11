@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AutoMapper;
 using Domain.Dto.User;
 using Domain.Entities;
 using Domain.Responses;
@@ -7,94 +8,63 @@ using Infrastructure.Interfaces;
 
 namespace Infrastructure.Service;
 
-public class UserService(ApplicationDataContext context) : IUserService
+public class UserService(ApplicationDataContext context,
+    IMapper mapper) : IUserService
 {
-    #region CreateUser
-    
     public Response<string> CreateUser(CreateUserDto dto)
     {
-        var newUser = new User
+        try
         {
-            Name = dto.Name,
-            Age = dto.Age,
-            Phone = dto.Phone,
-        };
-        context.Users.Add(newUser);
-        var res = context.SaveChanges();
-        if (res > 0)
-        {
-            return new Response<string>(HttpStatusCode.Created,"User created successfully");
+            var user = mapper.Map<User>(dto);
+            context.Users.Add(user);
+            var res =context.SaveChanges();
+            return res > 0
+                ? new Response<string>(HttpStatusCode.Created, "User created successfully")
+                : new Response<string>(HttpStatusCode.BadRequest, "Error creating user");
         }
-        else
+        catch (Exception e)
         {
-            return new Response<string>(HttpStatusCode.BadRequest,"User creation failed");
+            return new Response<string>(HttpStatusCode.InternalServerError, "Internal Server Error");
         }
     }
-    
-    #endregion
 
-    #region UpdateUser
-    public Response<string> UpdateUser(int userId,UpdateUserDto dto)
+    public Response<string> UpdateUser(int userId, UpdateUserDto dto)
     {
-        var oldUser = context.Users.FirstOrDefault(x=> x.Id == userId);
-        if (oldUser == null) 
-            return new Response<string>(HttpStatusCode.NotFound,"User not found");
+        var oldUser = context.Users.FirstOrDefault(x => x.Id == userId);
         oldUser.Name = dto.Name ?? oldUser.Name;
-        oldUser.Age = dto.Age ?? oldUser.Age;
         oldUser.Phone = dto.Phone ?? oldUser.Phone;
-        var res =  context.SaveChanges();
-        if (res > 0)
-            return new Response<string>(HttpStatusCode.OK,"User updated successfully");
-        else
-            return new Response<string>(HttpStatusCode.BadRequest,"User updation failed");
+        oldUser.Email = dto.Email ?? oldUser.Email;
+        oldUser.BirthDate = dto.BirthDate ?? oldUser.BirthDate;
+        oldUser.Gender = dto.Gender ?? oldUser.Gender;
+        var res = context.SaveChanges();
+        return res > 0 ? 
+            new Response<string>(HttpStatusCode.OK, "User updated successfully") 
+            : new Response<string>(HttpStatusCode.BadRequest, "Error updating user");
     }
-    #endregion
-    
-    #region DeleteUser
+
     public Response<string> DeleteUser(int userId)
     {
-        var res = context.Users.FirstOrDefault(x=> x.Id == userId);
-        if (res == null)
-            return new Response<string>(HttpStatusCode.NotFound,"User not found");
+        var res =context.Users.FirstOrDefault(x => x.Id == userId);
+        if(res == null) return new Response<string>(HttpStatusCode.NotFound, "User not found");
         context.Users.Remove(res);
         var effect = context.SaveChanges();
-        if (effect > 0)
-            return new Response<string>(HttpStatusCode.OK,"User deleted successfully");
-        else
-            return new Response<string>(HttpStatusCode.BadRequest,"User deletion failed");
+        return effect > 0 
+            ? new Response<string>(HttpStatusCode.OK, "User deleted successfully") 
+            : new Response<string>(HttpStatusCode.BadRequest, "Error deleting user");
     }
-    #endregion
-    
+
     public Response<List<GetUserDto>> GetAllUsers()
     {
-        var res = context.Users.ToList();
-        var dtos = res.Select(x => new GetUserDto
-        {
-            Id = x.Id,
-            Name = x.Name,
-            Age = x.Age,
-            Phone = x.Phone,
-            CreatedAt = x.CreatedAt
-        }).ToList();
-        if (dtos.Count > 0)
-            return new Response<List<GetUserDto>>(dtos);
-        else 
-            return new Response<List<GetUserDto>>(HttpStatusCode.NotFound,"User not found");
+        var users = context.Users.ToList();
+        var res = mapper.Map<List<GetUserDto>>(users);
+        return new Response<List<GetUserDto>>(res);
     }
 
     public Response<GetUserDto?> GetUserById(int userId)
     {
-        var res = context.Users.FirstOrDefault(x=> x.Id == userId);
-        if (res == null)
-            return new Response<GetUserDto?>(HttpStatusCode.NotFound,"User not found");
-        var dto = new GetUserDto
-        {
-            Id = res.Id,
-            Name = res.Name,
-            Age = res.Age,
-            Phone = res.Phone,
-            CreatedAt = res.CreatedAt
-        };
+        var res = context.Users.FirstOrDefault(x => x.Id == userId);
+        if (res == null) return new Response<GetUserDto?>(HttpStatusCode.NotFound, "User not found");
+        var dto = mapper.Map<GetUserDto>(res);
         return new Response<GetUserDto?>(dto);
     }
 }
